@@ -1,0 +1,5 @@
+hello: hallo
+world: wereld
+sky: hemel
+sea: "{{.name }} zee"
+cats: "{{.count}} {{- if gt .count 1}} katten{{- else}} kat{{- end}}"

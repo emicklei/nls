@@ -1,5 +1,5 @@
 hello: hello
-world: woreld
+world: world
 sky: sky
 sea: "{{.color }} sea"
 cats: "{{.count}} {{- if gt .count 1}} cats{{- else}} cat{{- end}}"

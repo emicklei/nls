@@ -1,7 +1,11 @@
 # nls
 Yet another easy to use i18n localization generator.
 
-The tool `nls` loads all messages in all available languages and generates a Go package with Go constants per message and a Localizer with lookup and replace functions.
+The tool `nls` loads all messages (in YAML files) in all available languages and generates a Go package with Go constants per message and a Localizer with lookup and replace functions.
+
+## install
+
+    go install github.com/emicklei/cmd/nls@latest
 
 ## tool usage
 Initialy, you start with a folder (e.g. `messages/en`) in your project with an empty `messages.yaml` file.

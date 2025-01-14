@@ -11,7 +11,7 @@ import (
 	"slices"
 	"text/template"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 var (
@@ -38,7 +38,7 @@ func main() {
 				if filepath.Ext(file.Name()) == ".yaml" {
 					fullName := filepath.Join(*oDir, each.Name(), file.Name())
 					if entries, err := collectEntries(each.Name(), fullName); err != nil {
-						log.Printf("cannot process file %s\n", fullName)
+						log.Printf("cannot process file %s:%v\n", err, fullName)
 					} else {
 						allEntries = append(allEntries, entries...)
 					}
@@ -55,6 +55,9 @@ func main() {
 		log.Fatalf("%[1]T %[1]v", err)
 	}
 	if err := writeGoFile(allEntries); err != nil {
+		log.Fatal(err)
+	}
+	if err := writeEntries(allEntries, *oDir); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -77,6 +80,7 @@ func writeGoFile(entries []Entry) error {
 		return err
 	}
 	keys := []string{}
+	// collect unique keys
 	for _, each := range entries {
 		if slices.Contains(keys, each.Key) {
 			continue

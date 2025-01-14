@@ -1,5 +1,8 @@
+cats: '{{.count}} {{- if gt .count 1}} katten{{- else}} kat{{- end}}'
 hello: hallo
-world: wereld
+multi: |
+  {{.name}} zegt hallo
+  tegen de wereld
+sea: '{{.name }} zee'
 sky: hemel
-sea: "{{.name }} zee"
-cats: "{{.count}} {{- if gt .count 1}} katten{{- else}} kat{{- end}}"
+world: wereld

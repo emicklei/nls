@@ -27,15 +27,17 @@ to the world
 	"en." + M_sea: `{{.color }} sea`,
 	"en." + M_sky: `sky`,
 	"en." + M_world: `world`,
-	"nl." + M_sea: `{{.name }} zee`,
-	"nl." + M_sky: `hemel`,
 	"nl." + M_world: `wereld`,
 	"nl." + M_cats: `{{.count}} {{- if gt .count 1}} katten{{- else}} kat{{- end}}`,
 	"nl." + M_hello: `hallo`,
 	"nl." + M_multi: `{{.name}} zegt hallo
 tegen de wereld
 `,
+	"nl." + M_sea: `{{.name }} zee`,
+	"nl." + M_sky: `hemel`,
 }
+
+type Params map[string]any
 
 type Localizer struct {
 	languages []string
@@ -61,13 +63,25 @@ func (l Localizer) Get(key string, fallback ...string) string {
 	return ""
 }
 
+// Format returns the text after applying substitutions using the key(string) and value pairs.
+// Returns an empty string if there no such key.
+func (l Localizer) Format(key string, kv ...any) string {
+	params := map[string]any{}
+	for i:=0;i<len(kv);i+=2{
+		k := kv[i]
+		if ks, ok := k.(string) ; ok{
+			params[ks]=kv[i+1]
+		} else {
+			return "bad arguments: Format expects [string,any] pairs"
+		}
+	}
+	return l.Replaced(key, params)
+}
+
 // Replaced returns the text after applying substitutions using the replacements.
 // Returns an empty string if there no such key.
-func (l Localizer) Replaced(key string, replacements ...map[string]any) string {
+func (l Localizer) Replaced(key string, replacements ...map[string]any) string {		
 	tmpl := l.Get(key)
-	if len(replacements) == 0 {
-		return tmpl
-	}
 	// If no replacements are provided, return the template as is.
 	if len(replacements) == 0 {
 		return tmpl

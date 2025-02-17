@@ -14,7 +14,7 @@ func main() {
 	fmt.Println(loc.Get(nls.M_hello))
 	fmt.Println(loc.Get(nls.M_world))
 	fmt.Println(loc.Get(nls.M_sky, "Sky"))
-	fmt.Println(loc.Replaced(nls.M_sea, map[string]any{"name": "Noord"}))
-	fmt.Println(loc.Replaced(nls.M_cats, map[string]any{"count": 3}))
-	fmt.Println(loc.Replaced(nls.M_cats, map[string]any{"count": 1}))
+	fmt.Println(loc.Format(nls.M_sea, "name", "Noord"))
+	fmt.Println(loc.Format(nls.M_cats, "count", 3))
+	fmt.Println(loc.Format(nls.M_cats, "count", 1))
 }

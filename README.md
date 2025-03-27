@@ -13,6 +13,15 @@ After adding a message key, you run `go generate` to (re)generate the Go package
 
 ## package usage
 ```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/emicklei/nls/example/nls"
+	"golang.org/x/text/language"
+)
+
 //go:generate nls -dir messages -pkg nls
 func main() {
 	loc := nls.New(language.Dutch.String(), language.English.String())

@@ -66,7 +66,7 @@ func main() {
 var localizerTemplate string
 
 func writeGoFile(entries []Entry) error {
-	outName := filepath.Join(*oPkg, "localizer.go")
+	outName := filepath.Join(*oPkg, "generated_catalog.go")
 	if *oVerbose {
 		log.Printf("writing %s\n", outName)
 	}

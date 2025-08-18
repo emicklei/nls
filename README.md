@@ -11,6 +11,21 @@ The tool `nls` loads all messages (in YAML files) in all available languages and
 Initialy, you start with a folder (e.g. `messages/en`) in your project with an empty `messages.yaml` file.
 After adding a message key, you run `go generate` to (re)generate the Go package and update all other languages with missing keys.
 
+## message catalog
+
+The contents of `messages/en/messages.yaml`:
+
+```
+cats: '{{.count}} {{- if gt .count 1}} katten{{- else}} kat{{- end}}'
+hello: hallo
+multi: |
+  {{.name}} zegt hallo
+  tegen de wereld
+sea: '{{.name}} zee'
+sky: hemel
+world: wereld
+```
+
 ## package usage
 ```go
 package main
@@ -39,7 +54,7 @@ Outputs
 Hallo
 Wereld
 Sky
-blauwe zee
+Noord zee
 3 katten
 1 kat
 ```

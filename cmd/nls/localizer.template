@@ -3,9 +3,7 @@
 package {{.Package}}
 
 import (
-	"fmt"
-	"strings"
-	"text/template"
+	NLS "github.com/emicklei/nls"
 )
 
 const (
@@ -21,66 +19,7 @@ var messages = map[string]string{
     {{- end}}
 }
 
-type Params map[string]any
-
-type Localizer struct {
-	languages []string
-}
-
 // New returns a Localizer with zero or more languages.
-func New(languages ...string) Localizer {
-	return Localizer{languages: languages}
-}
-
-// Get returns the text associated with a key for using the available languages
-// It returns an empty string if none of the languages have a (non-empty) value for the key and no fallback is provided.
-func (l Localizer) Get(key string, fallback ...string) string {
-	for _, lang := range l.languages {
-		mapkey := fmt.Sprintf("%s.%s", lang, key)
-		if v, ok := messages[mapkey]; ok && len(v) > 0 {
-			return v
-		}
-	}
-	if len(fallback) > 0 {
-		return fallback[0]
-	}
-	return ""
-}
-
-// Format returns the text after applying substitutions using the key(string) and value pairs.
-// Returns an empty string if there no such key.
-func (l Localizer) Format(key string, kv ...any) string {
-	params := map[string]any{}
-	for i:=0;i<len(kv);i+=2{
-		k := kv[i]
-		if ks, ok := k.(string) ; ok{
-			params[ks]=kv[i+1]
-		} else {
-			return "bad arguments: Format expects [string,any] pairs"
-		}
-	}
-	return l.Replaced(key, params)
-}
-
-// Replaced returns the text after applying substitutions using the replacements.
-// Returns an empty string if there no such key.
-func (l Localizer) Replaced(key string, replacements ...map[string]any) string {		
-	tmpl := l.Get(key)
-	// If no replacements are provided, return the template as is.
-	if len(replacements) == 0 {
-		return tmpl
-	}
-	// If the tmpl doesn't have any substitutions, no need to template.Execute.
-	if !strings.Contains(tmpl, "}}") {
-		return tmpl
-	}
-	replacer, err := template.New("replacer").Parse(tmpl)
-	if err != nil {
-		return err.Error()
-	}
-	buf := new(strings.Builder)
-	if err := replacer.Execute(buf, replacements[0]); err != nil {
-		return err.Error()
-	}
-	return buf.String()
+func New(languages ...string) NLS.Localizer {
+	return NLS.NewLocalizer(messages, languages...)
 }

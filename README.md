@@ -36,16 +36,16 @@ import (
 	"golang.org/x/text/language"
 )
 
-//go:generate nls -dir messages -pkg nls
+//go:generate nls -dir messages -pkg lang
 func main() {
-	loc := nls.New(language.Dutch.String(), language.English.String())
+	loc := lang.New(language.Dutch.String(), language.English.String())
 
-	fmt.Println(loc.Get(nls.M_hello))
-	fmt.Println(loc.Get(nls.M_world))
-	fmt.Println(loc.Get(nls.M_sky, "Sky")) // fallback to English
-	fmt.Println(loc.Replaced(nls.M_sea, map[string]string{"name": "Noord"}))
-	fmt.Println(loc.Replaced(nls.M_cats, map[string]any{"count": 3}))
-	fmt.Println(loc.Format(nls.M_cats, "count", 1))
+	fmt.Println(loc.Get(lang.M_hello))
+	fmt.Println(loc.Get(lang.M_world))
+	fmt.Println(loc.Get(lang.M_sky)) // fallback to English
+	fmt.Println(loc.Replaced(lang.M_sea, map[string]string{"name": "Noord"}))
+	fmt.Println(loc.Replaced(lang.M_cats, map[string]any{"count": 3}))
+	fmt.Println(loc.Format(lang.M_cats, "count", 1))
 }
 ```
 Outputs

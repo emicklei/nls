@@ -4,4 +4,5 @@ multi: |
   {{.name}} says hello
   to the world
 sea: '{{.color }} sea'
+sky: Sky
 world: world

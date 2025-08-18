@@ -4,5 +4,4 @@ multi: |
   {{.name}} zegt hallo
   tegen de wereld
 sea: '{{.name }} zee'
-sky: hemel
 world: wereld

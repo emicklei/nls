@@ -22,7 +22,6 @@ multi: |
   {{.name}} zegt hallo
   tegen de wereld
 sea: '{{.name}} zee'
-sky: hemel
 world: wereld
 ```
 
@@ -43,7 +42,7 @@ func main() {
 
 	fmt.Println(loc.Get(nls.M_hello))
 	fmt.Println(loc.Get(nls.M_world))
-	fmt.Println(loc.Get(nls.M_sky, "Sky"))
+	fmt.Println(loc.Get(nls.M_sky, "Sky")) // fallback to English
 	fmt.Println(loc.Replaced(nls.M_sea, map[string]string{"name": "Noord"}))
 	fmt.Println(loc.Replaced(nls.M_cats, map[string]any{"count": 3}))
 	fmt.Println(loc.Format(nls.M_cats, "count", 1))

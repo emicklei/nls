@@ -1,6 +1,7 @@
 package nls
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -71,6 +72,7 @@ func TestReplaced(t *testing.T) {
 		"en.no_subst":       "this is a test",
 		"en.invalid_tmpl":   "this is a {{.what",
 		"en.no_repl_needed": "no replacements",
+		"en.exec_error":     "{{index .A 1}}",
 	}
 	l := NewLocalizer(cat, "en")
 	if got, want := l.Replaced("template", map[string]any{"what": "test"}), "this is a test"; got != want {
@@ -87,5 +89,9 @@ func TestReplaced(t *testing.T) {
 	}
 	if got, want := l.Replaced("no_repl_needed"), "no replacements"; got != want {
 		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
+	}
+	// trigger an error during template execution
+	if got, want := l.Replaced("exec_error", map[string]any{"A": []string{}}), `error calling index: index out of range`; !strings.Contains(got, want) {
+		t.Errorf("got [%v] want to contain [%v]", got, want)
 	}
 }

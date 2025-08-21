@@ -1,1 +1,3 @@
 cmd/nls/nls
+coverage.out
+coverage.html

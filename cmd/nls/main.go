@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"slices"
 	"text/template"
 
 	"gopkg.in/yaml.v3"
@@ -79,22 +78,21 @@ func writeGoFile(entries []Entry) error {
 	if err != nil {
 		return err
 	}
-	keys := []string{}
-	// collect unique keys
+	uniqueEntries := map[string]Entry{}
+	// collect unique entries
 	for _, each := range entries {
-		if slices.Contains(keys, each.Key) {
-			continue
+		if _, ok := uniqueEntries[each.Key]; !ok {
+			uniqueEntries[each.Key] = each
 		}
-		keys = append(keys, each.Key)
 	}
 	data := struct {
-		Package string
-		Keys    []string
-		Entries []Entry
+		Package       string
+		UniqueEntries map[string]Entry
+		Entries       []Entry
 	}{
-		Package: filepath.Base(*oPkg),
-		Keys:    keys,
-		Entries: entries,
+		Package:       filepath.Base(*oPkg),
+		UniqueEntries: uniqueEntries,
+		Entries:       entries,
 	}
 	return tmpl.Execute(out, data)
 }
@@ -109,7 +107,7 @@ func collectEntries(language, fullName string) ([]Entry, error) {
 	}
 	defer reader.Close()
 	dec := yaml.NewDecoder(reader)
-	messages := make(map[string]string)
+	messages := make(map[string]any)
 	err = dec.Decode(&messages)
 	if err != nil {
 		return nil, err
@@ -119,7 +117,18 @@ func collectEntries(language, fullName string) ([]Entry, error) {
 	}
 	var entries []Entry
 	for key, value := range messages {
-		entries = append(entries, Entry{Language: language, Key: key, Text: value})
+		if s, ok := value.(string); ok {
+			entries = append(entries, Entry{Language: language, Key: key, Text: s})
+		} else if m, ok := value.(map[string]any); ok {
+			entry := Entry{Language: language, Key: key}
+			if v, ok := m["value"].(string); ok {
+				entry.Text = v
+			}
+			if v, ok := m["description"].(string); ok {
+				entry.Description = v
+			}
+			entries = append(entries, entry)
+		}
 	}
 	return entries, nil
 }

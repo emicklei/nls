@@ -7,8 +7,11 @@ import (
 )
 
 const (
-    {{- range .Keys}}
-	M_{{.}} = "{{.}}"
+    {{- range .UniqueEntries}}
+    {{- if .Description}}
+	// M_{{.Key}} is for {{.Description}}
+    {{- end}}
+	M_{{.Key}} = "{{.Key}}"
     {{- end}}
 )
 

@@ -8,6 +8,7 @@ import (
 
 const (
 	M_cats = "cats"
+	// M_hello is for a friendly greeting
 	M_hello = "hello"
 	M_multi = "multi"
 	M_sea = "sea"
@@ -17,21 +18,21 @@ const (
 
 // all messages found in all language folders
 var messages = map[string]string{
-	"en." + M_cats: `{{.count}} {{- if gt .count 1}} cats{{- else}} cat{{- end}}`,
-	"en." + M_hello: `hello`,
 	"en." + M_multi: `{{.name}} says hello
 to the world
 `,
 	"en." + M_sea: `{{.color }} sea`,
 	"en." + M_sky: `Sky`,
 	"en." + M_world: `world`,
+	"en." + M_cats: `{{.count}} {{- if gt .count 1}} cats{{- else}} cat{{- end}}`,
+	"en." + M_hello: `hello`,
+	"nl." + M_world: `wereld`,
+	"nl." + M_cats: `{{.count}} {{- if gt .count 1}} katten{{- else}} kat{{- end}}`,
+	"nl." + M_hello: `hallo`,
 	"nl." + M_multi: `{{.name}} zegt hallo
 tegen de wereld
 `,
 	"nl." + M_sea: `{{.name }} zee`,
-	"nl." + M_world: `wereld`,
-	"nl." + M_cats: `{{.count}} {{- if gt .count 1}} katten{{- else}} kat{{- end}}`,
-	"nl." + M_hello: `hallo`,
 }
 
 // New returns a Localizer with zero or more languages.

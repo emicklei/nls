@@ -25,6 +25,18 @@ sea: '{{.name}} zee'
 world: wereld
 ```
 
+### structured messages
+
+For messages that need a description to provide more context to translators, you can use a structured format:
+
+```
+hello:
+  value: hallo
+  description: a friendly greeting
+```
+
+The description will be added as a comment to the generated Go code.
+
 ## package usage
 ```go
 package main

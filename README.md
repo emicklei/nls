@@ -5,7 +5,7 @@ The tool `nls` loads all messages (in YAML files) in all available languages and
 
 ## install
 
-    go install github.com/emicklei/cmd/nls@latest
+    go install github.com/emicklei/nls/cmd/nls@latest
 
 ## tool usage
 Initialy, you start with a folder (e.g. `messages/en`) in your project with an empty `messages.yaml` file.

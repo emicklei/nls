@@ -31,8 +31,8 @@ For messages that need a description to provide more context to translators, you
 
 ```
 hello:
-  value: hallo
-  description: a friendly greeting
+  msg: hallo
+  desc: a friendly greeting
 ```
 
 The description will be added as a comment to the generated Go code.

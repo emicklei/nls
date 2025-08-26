@@ -71,7 +71,7 @@ var localizerTemplate string
 func constantName(e Entry) string {
 	name := "M_" + e.Key
 	// count replacements
-	replacements := strings.Count(e.Text, "{{.")
+	replacements := e.Replacements()
 	if replacements == 0 {
 		return name
 	}
@@ -102,8 +102,14 @@ func writeGoFile(entries []Entry) error {
 	uniqueEntries := map[string]Entry{}
 	// collect unique entries
 	for _, each := range entries {
-		if _, ok := uniqueEntries[each.Key]; !ok {
+		existing, ok := uniqueEntries[each.Key]
+		if !ok {
 			uniqueEntries[each.Key] = each
+		} else {
+			// give priority to entry with description
+			if len(each.Description) > 0 && len(existing.Description) == 0 {
+				uniqueEntries[each.Key] = each
+			}
 		}
 	}
 	data := struct {
@@ -142,10 +148,10 @@ func collectEntries(language, fullName string) ([]Entry, error) {
 			entries = append(entries, Entry{Language: language, Key: key, Text: s})
 		} else if m, ok := value.(map[string]any); ok {
 			entry := Entry{Language: language, Key: key}
-			if v, ok := m["value"].(string); ok {
+			if v, ok := m["msg"].(string); ok {
 				entry.Text = v
 			}
-			if v, ok := m["description"].(string); ok {
+			if v, ok := m["desc"].(string); ok {
 				entry.Description = v
 			}
 			entries = append(entries, entry)

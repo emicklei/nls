@@ -4,11 +4,14 @@ import (
 	_ "embed"
 	"errors"
 	"flag"
+	"fmt"
 	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"text/template"
+	"unicode"
 
 	"gopkg.in/yaml.v3"
 )
@@ -64,6 +67,22 @@ func main() {
 //go:embed localizer.template
 var localizerTemplate string
 
+// constantName returns the full constant name, e.g. M_hello, M_cats1, M_trends2_3
+func constantName(e Entry) string {
+	name := "M_" + e.Key
+	// count replacements
+	replacements := strings.Count(e.Text, "{{.")
+	if replacements == 0 {
+		return name
+	}
+	// check if last rune of key is a digit
+	runes := []rune(e.Key)
+	if len(runes) > 0 && unicode.IsDigit(runes[len(runes)-1]) {
+		return fmt.Sprintf("%s_%d", name, replacements)
+	}
+	return fmt.Sprintf("%s%d", name, replacements)
+}
+
 func writeGoFile(entries []Entry) error {
 	outName := filepath.Join(*oPkg, "generated_catalog.go")
 	if *oVerbose {
@@ -74,7 +93,9 @@ func writeGoFile(entries []Entry) error {
 		return err
 	}
 	defer out.Close()
-	tmpl, err := template.New("localizer").Parse(localizerTemplate)
+	tmpl, err := template.New("localizer").Funcs(template.FuncMap{
+		"constantName": constantName,
+	}).Parse(localizerTemplate)
 	if err != nil {
 		return err
 	}

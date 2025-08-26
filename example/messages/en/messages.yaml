@@ -5,4 +5,5 @@ multi: |
   to the world
 sea: '{{.color }} sea'
 sky: Sky
+trends2: '{{.value}} trends'
 world: world

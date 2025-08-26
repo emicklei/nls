@@ -12,26 +12,29 @@ const (
 	M_multi1 = "multi"
 	M_sea1 = "sea"
 	M_sky = "sky"
+	M_trends2_1 = "trends2"
 	M_world = "world"
 )
 
 // all messages found in all language folders
 var messages = map[string]string{
-	"en." + M_sea1: `{{.color }} sea`,
-	"en." + M_sky: `Sky`,
+	"en." + M_trends2_1: `{{.value}} trends`,
 	"en." + M_world: `world`,
 	"en." + M_cats1: `{{.count}} {{- if gt .count 1}} cats{{- else}} cat{{- end}}`,
 	"en." + M_hello: `hello`,
 	"en." + M_multi1: `{{.name}} says hello
 to the world
 `,
+	"en." + M_sea1: `{{.color }} sea`,
+	"en." + M_sky: `Sky`,
+	"nl." + M_trends2_1: `{{.value}} trends`,
+	"nl." + M_world: `wereld`,
+	"nl." + M_cats1: `{{.count}} {{- if gt .count 1}} katten{{- else}} kat{{- end}}`,
+	"nl." + M_hello: `hallo`,
 	"nl." + M_multi1: `{{.name}} zegt hallo
 tegen de wereld
 `,
 	"nl." + M_sea1: `{{.name }} zee`,
-	"nl." + M_world: `wereld`,
-	"nl." + M_cats1: `{{.count}} {{- if gt .count 1}} katten{{- else}} kat{{- end}}`,
-	"nl." + M_hello: `hallo`,
 }
 
 // New returns a Localizer with zero or more languages.

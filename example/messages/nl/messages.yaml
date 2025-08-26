@@ -4,4 +4,5 @@ multi: |
   {{.name}} zegt hallo
   tegen de wereld
 sea: '{{.name }} zee'
+trends2: '{{.value}} trends'
 world: wereld

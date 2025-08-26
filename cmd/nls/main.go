@@ -4,11 +4,14 @@ import (
 	_ "embed"
 	"errors"
 	"flag"
+	"fmt"
 	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"text/template"
+	"unicode"
 
 	"gopkg.in/yaml.v3"
 )
@@ -64,6 +67,22 @@ func main() {
 //go:embed localizer.template
 var localizerTemplate string
 
+// constantName returns the full constant name, e.g. M_hello, M_cats1, M_trends2_3
+func constantName(e Entry) string {
+	name := "M_" + e.Key
+	// count replacements
+	replacements := e.Replacements()
+	if replacements == 0 {
+		return name
+	}
+	// check if last rune of key is a digit
+	runes := []rune(e.Key)
+	if len(runes) > 0 && unicode.IsDigit(runes[len(runes)-1]) {
+		return fmt.Sprintf("%s_%d", name, replacements)
+	}
+	return fmt.Sprintf("%s%d", name, replacements)
+}
+
 func writeGoFile(entries []Entry) error {
 	outName := filepath.Join(*oPkg, "generated_catalog.go")
 	if *oVerbose {
@@ -74,15 +93,23 @@ func writeGoFile(entries []Entry) error {
 		return err
 	}
 	defer out.Close()
-	tmpl, err := template.New("localizer").Parse(localizerTemplate)
+	tmpl, err := template.New("localizer").Funcs(template.FuncMap{
+		"constantName": constantName,
+	}).Parse(localizerTemplate)
 	if err != nil {
 		return err
 	}
 	uniqueEntries := map[string]Entry{}
 	// collect unique entries
 	for _, each := range entries {
-		if _, ok := uniqueEntries[each.Key]; !ok {
+		existing, ok := uniqueEntries[each.Key]
+		if !ok {
 			uniqueEntries[each.Key] = each
+		} else {
+			// give priority to entry with description
+			if len(each.Description) > 0 && len(existing.Description) == 0 {
+				uniqueEntries[each.Key] = each
+			}
 		}
 	}
 	data := struct {
@@ -121,10 +148,10 @@ func collectEntries(language, fullName string) ([]Entry, error) {
 			entries = append(entries, Entry{Language: language, Key: key, Text: s})
 		} else if m, ok := value.(map[string]any); ok {
 			entry := Entry{Language: language, Key: key}
-			if v, ok := m["value"].(string); ok {
+			if v, ok := m["msg"].(string); ok {
 				entry.Text = v
 			}
-			if v, ok := m["description"].(string); ok {
+			if v, ok := m["desc"].(string); ok {
 				entry.Description = v
 			}
 			entries = append(entries, entry)

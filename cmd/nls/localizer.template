@@ -9,16 +9,16 @@ import (
 const (
     {{- range .UniqueEntries}}
     {{- if .Description}}
-	// M_{{.Key}} is for {{.Description}}
+	// {{constantName .}} is for {{.Description}}
     {{- end}}
-	M_{{.Key}} = "{{.Key}}"
+	{{constantName .}} = "{{.Key}}"
     {{- end}}
 )
 
 // all messages found in all language folders
 var messages = map[string]string{
     {{- range .Entries }}
-	"{{.Language}}." + M_{{.Key}}: `{{.Text}}`,
+	"{{.Language}}." + {{constantName .}}: `{{.Text}}`,
     {{- end}}
 }
 

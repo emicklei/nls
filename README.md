@@ -31,11 +31,23 @@ For messages that need a description to provide more context to translators, you
 
 ```
 hello:
-  value: hallo
-  description: a friendly greeting
+  msg: hallo
+  desc: a friendly greeting
 ```
 
 The description will be added as a comment to the generated Go code.
+
+### Constant Naming
+
+The tool generates a Go constant for each message key. The name of the constant is derived from the key.
+If the message value requires replacements (i.e. it contains `{{.` syntax), the generated constant name will be suffixed with the number of replacements.
+If the key already ends with a digit, an underscore `_` is used as a separator.
+
+For example:
+- `hello: hello` will generate `M_hello`.
+- `sea: '{{.color}} sea'` will generate `M_sea1`.
+- `cats: '{{.count}} cats'` will generate `M_cats1`.
+- `trends2: '{{.value}} trends'` will generate `M_trends2_1`.
 
 ## package usage
 ```go
@@ -55,9 +67,9 @@ func main() {
 	fmt.Println(loc.Get(lang.M_hello))
 	fmt.Println(loc.Get(lang.M_world))
 	fmt.Println(loc.Get(lang.M_sky)) // fallback to English
-	fmt.Println(loc.Replaced(lang.M_sea, map[string]string{"name": "Noord"}))
-	fmt.Println(loc.Replaced(lang.M_cats, map[string]any{"count": 3}))
-	fmt.Println(loc.Format(lang.M_cats, "count", 1))
+	fmt.Println(loc.Replaced(lang.M_sea1, map[string]string{"name": "Noord"}))
+	fmt.Println(loc.Replaced(lang.M_cats1, map[string]any{"count": 3}))
+	fmt.Println(loc.Format(lang.M_cats1, "count", 1))
 }
 ```
 Outputs

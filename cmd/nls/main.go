@@ -9,7 +9,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 	"text/template"
 	"unicode"
 

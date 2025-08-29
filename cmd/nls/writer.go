@@ -35,8 +35,9 @@ func entriesToMap(entries []Entry) map[string]map[string]Entry {
 		} else {
 			// only overwrite if the text is not empty
 			if each.Text != "" {
-				entry.Text = each.Text
-				langMap[each.Key] = entry
+				// keep comment of existing
+				each.Comment = entry.Comment
+				langMap[each.Key] = each
 			}
 		}
 	}
@@ -60,13 +61,65 @@ func writeLangFile(lang string, langMap map[string]Entry, dir string) error {
 		return entries[i].Key < entries[j].Key
 	})
 	for _, each := range entries {
+		if each.Comment != "" {
+			fmt.Fprintln(out, each.Comment)
+		}
 		fmt.Fprintf(out, "%s: ", each.Key)
-		writeYAMLString(out, each.Text)
+		if each.Description != "" {
+			writeNestedYAMLString(out, each.Text, each.Description)
+		} else {
+			writeYAMLString(out, each.Text)
+		}
 	}
 	return nil
 }
 
 var quoteit = "{}[],&*#?|-<>=!%@"
+
+// write the key using a nested format:
+// key:
+//
+//	msg: value
+//	desc: explanation of the context in which the value is used
+func writeNestedYAMLString(w io.Writer, msg string, desc string) {
+	fmt.Fprintln(w)
+
+	fmt.Fprint(w, "  msg: ")
+	if msg == "" {
+		fmt.Fprintln(w)
+	} else if strings.Contains(msg, "\n") {
+		fmt.Fprintln(w, "|")
+		lines := strings.Split(msg, "\n")
+		for i, line := range lines {
+			if line == "" && i == len(lines)-1 {
+				continue
+			}
+			fmt.Fprintf(w, "    %s\n", line)
+		}
+	} else if strings.ContainsAny(msg, quoteit) {
+		fmt.Fprintf(w, "'%s'\n", msg)
+	} else {
+		fmt.Fprintf(w, "%s\n", msg)
+	}
+
+	fmt.Fprint(w, "  desc: ")
+	if desc == "" {
+		fmt.Fprintln(w)
+	} else if strings.Contains(desc, "\n") {
+		fmt.Fprintln(w, "|")
+		lines := strings.Split(desc, "\n")
+		for i, line := range lines {
+			if line == "" && i == len(lines)-1 {
+				continue
+			}
+			fmt.Fprintf(w, "    %s\n", line)
+		}
+	} else if strings.ContainsAny(desc, quoteit) {
+		fmt.Fprintf(w, "'%s'\n", desc)
+	} else {
+		fmt.Fprintf(w, "%s\n", desc)
+	}
+}
 
 func writeYAMLString(w io.Writer, s string) {
 	if s == "" {

@@ -3,6 +3,8 @@
 package {{.Package}}
 
 import (
+	"text/template"
+
 	NLS "github.com/emicklei/nls"
 )
 
@@ -15,11 +17,18 @@ const (
     {{- end}}
 )
 
-// all messages found in all language folders
-var messages = map[string]string{
-    {{- range .Entries }}
-	"{{.Language}}." + {{constantName .}}: `{{.Text}}`,
-    {{- end}}
+var (
+	// messages is a map of language-key to message template.
+	messages map[string]*template.Template
+)
+
+func init() {
+	messages = make(map[string]*template.Template)
+	   {{- range .Entries }}
+	{{- if .Text}}
+	messages["{{.Language}}."+{{constantName .}}] = template.Must(template.New("{{.Language}}.{{.Key}}").Parse(`{{.Text}}`))
+	{{- end}}
+	   {{- end}}
 }
 
 // New returns a Localizer with zero or more languages.

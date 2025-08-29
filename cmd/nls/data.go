@@ -7,6 +7,7 @@ type Entry struct {
 	Key         string
 	Text        string
 	Description string
+	Comment     string
 }
 
 func (e Entry) Replacements() int {

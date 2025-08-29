@@ -47,6 +47,7 @@ func main() {
 			}
 		}
 	}
+	allEntries = fillMissingEntries(allEntries)
 	if *oVerbose {
 		for _, each := range allEntries {
 			log.Printf("%s.%s=%s\n", each.Language, each.Key, each.Text)
@@ -133,28 +134,78 @@ func collectEntries(language, fullName string) ([]Entry, error) {
 	}
 	defer reader.Close()
 	dec := yaml.NewDecoder(reader)
-	messages := make(map[string]any)
-	err = dec.Decode(&messages)
+	var node yaml.Node
+	err = dec.Decode(&node)
 	if err != nil {
 		return nil, err
 	}
 	if *oVerbose {
-		log.Printf("%d messages found\n", len(messages))
+		log.Printf("%d messages found\n", len(node.Content))
 	}
 	var entries []Entry
-	for key, value := range messages {
-		if s, ok := value.(string); ok {
-			entries = append(entries, Entry{Language: language, Key: key, Text: s})
-		} else if m, ok := value.(map[string]any); ok {
-			entry := Entry{Language: language, Key: key}
-			if v, ok := m["msg"].(string); ok {
-				entry.Text = v
+	for i, content := range node.Content[0].Content {
+		// is key?
+		if i%2 == 0 {
+			keyNode := content
+			valueNode := node.Content[0].Content[i+1]
+			if valueNode.Tag == "!!str" {
+				entries = append(entries, Entry{Language: language, Key: keyNode.Value, Text: valueNode.Value, Comment: keyNode.HeadComment})
+			} else if valueNode.Tag == "!!map" {
+				entry := Entry{Language: language, Key: keyNode.Value, Comment: keyNode.HeadComment}
+				for j, each := range valueNode.Content {
+					if j%2 == 0 {
+						mapkeyNode := each
+						mapvalueNode := valueNode.Content[j+1]
+						if mapkeyNode.Value == "msg" {
+							entry.Text = mapvalueNode.Value
+						}
+						if mapkeyNode.Value == "desc" {
+							entry.Description = mapvalueNode.Value
+						}
+					}
+				}
+				entries = append(entries, entry)
 			}
-			if v, ok := m["desc"].(string); ok {
-				entry.Description = v
-			}
-			entries = append(entries, entry)
 		}
 	}
 	return entries, nil
+}
+
+func fillMissingEntries(allEntries []Entry) []Entry {
+	// key is language
+	entriesPerLanguage := map[string][]Entry{}
+	for _, each := range allEntries {
+		entriesPerLanguage[each.Language] = append(entriesPerLanguage[each.Language], each)
+	}
+	// key is message key
+	allKeys := map[string]Entry{}
+	for _, each := range allEntries {
+		// only set description if not already set or empty
+		if d, ok := allKeys[each.Key]; !ok || d.Description == "" {
+			allKeys[each.Key] = each
+		}
+	}
+	for lang, entries := range entriesPerLanguage {
+		// key is message key
+		keysInLang := map[string]bool{}
+		for _, each := range entries {
+			keysInLang[each.Key] = true
+		}
+		for key, entryWithInfo := range allKeys {
+			if !keysInLang[key] {
+				// missing key
+				if *oVerbose {
+					log.Printf("language [%s] is missing key [%s]", lang, key)
+				}
+				newEntry := Entry{
+					Language:    lang,
+					Key:         key,
+					Description: entryWithInfo.Description,
+					Comment:     entryWithInfo.Comment,
+				}
+				allEntries = append(allEntries, newEntry)
+			}
+		}
+	}
+	return allEntries
 }

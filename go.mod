@@ -1,8 +1,8 @@
 module github.com/emicklei/nls
 
-go 1.25
+go 1.19
 
 require (
-	golang.org/x/text v0.28.0
+	golang.org/x/text v0.14.0
 	gopkg.in/yaml.v3 v3.0.1
 )

@@ -1,9 +1,16 @@
+# is it?
+bestaat: 
+  msg: 
+  desc: of niet
 cats: '{{.count}} {{- if gt .count 1}} cats{{- else}} cat{{- end}}'
-hello: hello
+hello: 
+  msg: 
+  desc: hallo
 multi: |
   {{.name}} says hello
   to the world
 sea: '{{.color }} sea'
 sky: Sky
 trends2: '{{.value}} trends'
+# comment
 world: world

@@ -3,14 +3,19 @@ package nls
 import (
 	"strings"
 	"testing"
+	"text/template"
 )
 
+func mustTemplate(s string) *template.Template {
+	return template.Must(template.New("").Parse(s))
+}
+
 func TestGet(t *testing.T) {
-	cat := map[string]string{
-		"en.hello": "world",
-		"nl.hello": "wereld",
-		"en.empty": "",
-		"nl.empty": "no value",
+	cat := map[string]*template.Template{
+		"en.hello": mustTemplate("world"),
+		"nl.hello": mustTemplate("wereld"),
+		"en.empty": mustTemplate(""),
+		"nl.empty": mustTemplate("no value"),
 	}
 	l := NewLocalizer(cat, "nl", "en")
 	if got, want := l.Get("hello"), "wereld"; got != want {
@@ -37,16 +42,19 @@ func TestGet(t *testing.T) {
 		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
 	}
 	l = NewLocalizer(cat, "en", "nl")
-	if got, want := l.Get("empty"), "no value"; got != want {
+	if got, want := l.Get("empty"), ""; got != want {
+		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
+	}
+	if got, want := l.Get("empty", "fallback"), "fallback"; got != want {
 		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
 	}
 }
 
 func TestFormat(t *testing.T) {
-	cat := map[string]string{
-		"en.template": "this is a {{.what}}",
-		"en.multi":    "this is a {{.what}} and {{.who}}",
-		"en.no_subst": "this is a test",
+	cat := map[string]*template.Template{
+		"en.template": mustTemplate("this is a {{.what}}"),
+		"en.multi":    mustTemplate("this is a {{.what}} and {{.who}}"),
+		"en.no_subst": mustTemplate("this is a test"),
 	}
 	l := NewLocalizer(cat, "en")
 	if got, want := l.Format("template", "what", "test"), "this is a test"; got != want {
@@ -67,12 +75,11 @@ func TestFormat(t *testing.T) {
 }
 
 func TestReplaced(t *testing.T) {
-	cat := map[string]string{
-		"en.template":       "this is a {{.what}}",
-		"en.no_subst":       "this is a test",
-		"en.invalid_tmpl":   "this is a {{.what",
-		"en.no_repl_needed": "no replacements",
-		"en.exec_error":     "{{index .A 1}}",
+	cat := map[string]*template.Template{
+		"en.template":       mustTemplate("this is a {{.what}}"),
+		"en.no_subst":       mustTemplate("this is a test"),
+		"en.no_repl_needed": mustTemplate("no replacements"),
+		"en.exec_error":     mustTemplate("{{index .A 1}}"),
 	}
 	l := NewLocalizer(cat, "en")
 	if got, want := l.Replaced("template", map[string]any{"what": "test"}), "this is a test"; got != want {
@@ -84,9 +91,6 @@ func TestReplaced(t *testing.T) {
 	if got, want := l.Replaced("no_subst", map[string]any{"what": "test"}), "this is a test"; got != want {
 		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
 	}
-	if got, want := l.Replaced("invalid_tmpl", map[string]any{"what": "test"}), "template: replacer:1: unclosed action"; got != want {
-		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
-	}
 	if got, want := l.Replaced("no_repl_needed"), "no replacements"; got != want {
 		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
 	}
@@ -94,4 +98,11 @@ func TestReplaced(t *testing.T) {
 	if got, want := l.Replaced("exec_error", map[string]any{"A": []string{}}), `error calling index: index out of range`; !strings.Contains(got, want) {
 		t.Errorf("got [%v] want to contain [%v]", got, want)
 	}
+}
+
+func TestMissing(t *testing.T) {
+	cat := map[string]*template.Template{}
+	l := NewLocalizer(cat, "en")
+	l.Get("absent", "value")
+	l.ReportMissing()
 }

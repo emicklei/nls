@@ -1,33 +1,61 @@
 package nls
 
 import (
+	"bytes"
 	"fmt"
-	"strings"
 	"text/template"
 )
 
 type Localizer struct {
-	catalog   map[string]string
+	catalog   map[string]*template.Template
 	languages []string
+	missing   map[string]string
 }
 
-func NewLocalizer(catalog map[string]string, languages ...string) Localizer {
-	return Localizer{catalog: catalog, languages: languages}
+func NewLocalizer(catalog map[string]*template.Template, languages ...string) Localizer {
+	return Localizer{catalog: catalog, languages: languages, missing: map[string]string{}}
+}
+
+func (l Localizer) findTemplate(key string) *template.Template {
+	for _, lang := range l.languages {
+		mapkey := fmt.Sprintf("%s.%s", lang, key)
+		if tmpl, ok := l.catalog[mapkey]; ok {
+			return tmpl
+		}
+	}
+	return nil
+}
+
+func (l Localizer) ReportMissing() {
+	for k, v := range l.missing {
+		fmt.Printf("%s:\n\tmsg: %s\n\tdesc:\n", k, v)
+	}
 }
 
 // Get returns the text associated with a key for using the available languages
 // It returns an empty string if none of the languages have a (non-empty) value for the key and no fallback is provided.
 func (l Localizer) Get(key string, fallback ...string) string {
-	for _, lang := range l.languages {
-		mapkey := fmt.Sprintf("%s.%s", lang, key)
-		if v, ok := l.catalog[mapkey]; ok && len(v) > 0 {
-			return v
+	tmpl := l.findTemplate(key)
+	if tmpl == nil {
+		if len(fallback) > 0 {
+			l.missing[key] = fallback[0]
+			return fallback[0]
+		}
+		return ""
+	}
+	buf := new(bytes.Buffer)
+	// execute with no data
+	if err := tmpl.Execute(buf, nil); err != nil {
+		return err.Error()
+	}
+	msg := buf.String()
+	if msg == "" {
+		if len(fallback) > 0 {
+			l.missing[key] = fallback[0]
+			return fallback[0]
 		}
 	}
-	if len(fallback) > 0 {
-		return fallback[0]
-	}
-	return ""
+	return msg
 }
 
 // Format returns the text after applying substitutions using the key(string) and value pairs.
@@ -48,22 +76,16 @@ func (l Localizer) Format(key string, kv ...any) string {
 // Replaced returns the text after applying substitutions using the replacements.
 // Returns an empty string if there no such key.
 func (l Localizer) Replaced(key string, replacements ...map[string]any) string {
-	tmpl := l.Get(key)
-	// If no replacements are provided, return the template as is.
-	if len(replacements) == 0 {
-		return tmpl
+	tmpl := l.findTemplate(key)
+	if tmpl == nil {
+		return ""
 	}
-	// If the tmpl doesn't have any substitutions, no need to template.Execute.
-	// Note: this optimization is removed because it prevents detection of malformed templates.
-	// if !strings.Contains(tmpl, "}}") {
-	// 	return tmpl
-	// }
-	replacer, err := template.New("replacer").Parse(tmpl)
-	if err != nil {
-		return err.Error()
+	var data any
+	if len(replacements) > 0 {
+		data = replacements[0]
 	}
-	buf := new(strings.Builder)
-	if err := replacer.Execute(buf, replacements[0]); err != nil {
+	buf := new(bytes.Buffer)
+	if err := tmpl.Execute(buf, data); err != nil {
 		return err.Error()
 	}
 	return buf.String()

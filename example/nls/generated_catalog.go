@@ -3,11 +3,16 @@
 package nls
 
 import (
+	"text/template"
+
 	NLS "github.com/emicklei/nls"
 )
 
 const (
+	// M_bestaat is for of niet
+	M_bestaat = "bestaat"
 	M_cats1 = "cats"
+	// M_hello is for hallo
 	M_hello = "hello"
 	M_multi1 = "multi"
 	M_sea1 = "sea"
@@ -16,25 +21,30 @@ const (
 	M_world = "world"
 )
 
-// all messages found in all language folders
-var messages = map[string]string{
-	"en." + M_cats1: `{{.count}} {{- if gt .count 1}} cats{{- else}} cat{{- end}}`,
-	"en." + M_hello: `hello`,
-	"en." + M_multi1: `{{.name}} says hello
+var (
+	// messages is a map of language-key to message template.
+	messages map[string]*template.Template
+)
+
+func init() {
+	messages = make(map[string]*template.Template)
+	messages["en."+M_cats1] = template.Must(template.New("en.cats").Parse(`{{.count}} {{- if gt .count 1}} cats{{- else}} cat{{- end}}`))
+	messages["en."+M_multi1] = template.Must(template.New("en.multi").Parse(`{{.name}} says hello
 to the world
-`,
-	"en." + M_sea1: `{{.color }} sea`,
-	"en." + M_sky: `Sky`,
-	"en." + M_trends2_1: `{{.value}} trends`,
-	"en." + M_world: `world`,
-	"nl." + M_cats1: `{{.count}} {{- if gt .count 1}} katten{{- else}} kat{{- end}}`,
-	"nl." + M_hello: `hallo`,
-	"nl." + M_multi1: `{{.name}} zegt hallo
+`))
+	messages["en."+M_sea1] = template.Must(template.New("en.sea").Parse(`{{.color }} sea`))
+	messages["en."+M_sky] = template.Must(template.New("en.sky").Parse(`Sky`))
+	messages["en."+M_trends2_1] = template.Must(template.New("en.trends2").Parse(`{{.value}} trends`))
+	messages["en."+M_world] = template.Must(template.New("en.world").Parse(`world`))
+	messages["nl."+M_bestaat] = template.Must(template.New("nl.bestaat").Parse(`wel`))
+	messages["nl."+M_cats1] = template.Must(template.New("nl.cats").Parse(`{{.count}} {{- if gt .count 1}} katten{{- else}} kat{{- end}}`))
+	messages["nl."+M_hello] = template.Must(template.New("nl.hello").Parse(`hallo`))
+	messages["nl."+M_multi1] = template.Must(template.New("nl.multi").Parse(`{{.name}} zegt hallo
 tegen de wereld
-`,
-	"nl." + M_sea1: `{{.name }} zee`,
-	"nl." + M_trends2_1: `{{.value}} trends`,
-	"nl." + M_world: `wereld`,
+`))
+	messages["nl."+M_sea1] = template.Must(template.New("nl.sea").Parse(`{{.name }} zee`))
+	messages["nl."+M_trends2_1] = template.Must(template.New("nl.trends2").Parse(`{{.value}} trends`))
+	messages["nl."+M_world] = template.Must(template.New("nl.world").Parse(`wereld`))
 }
 
 // New returns a Localizer with zero or more languages.

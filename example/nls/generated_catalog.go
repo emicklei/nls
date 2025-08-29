@@ -21,13 +21,10 @@ const (
 	M_world = "world"
 )
 
-var (
-	// messages is a map of language-key to message template.
-	messages map[string]*template.Template
-)
+// messages is a map of language-key to message template.
+var messages = make(map[string]*template.Template,16)
 
 func init() {
-	messages = make(map[string]*template.Template)
 	messages["en."+M_cats1] = template.Must(template.New("en.cats").Parse(`{{.count}} {{- if gt .count 1}} cats{{- else}} cat{{- end}}`))
 	messages["en."+M_multi1] = template.Must(template.New("en.multi").Parse(`{{.name}} says hello
 to the world

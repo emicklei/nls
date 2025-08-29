@@ -61,20 +61,22 @@ package main
 import (
 	"fmt"
 
-	"github.com/emicklei/nls/example/nls"
+	//lint:ignore ST1001 less verbose
+	. "github.com/emicklei/nls/example/nls"
 	"golang.org/x/text/language"
 )
 
-//go:generate nls -dir messages -pkg lang
+//go:generate nls -dir messages -pkg nls -v
 func main() {
-	loc := lang.New(language.Dutch.String(), language.English.String())
+	loc := New(language.Dutch.String(), language.English.String())
 
-	fmt.Println(loc.Get(lang.M_hello))
-	fmt.Println(loc.Get(lang.M_world))
-	fmt.Println(loc.Get(lang.M_sky)) // fallback to English
-	fmt.Println(loc.Replaced(lang.M_sea1, map[string]string{"name": "Noord"}))
-	fmt.Println(loc.Replaced(lang.M_cats1, map[string]any{"count": 3}))
-	fmt.Println(loc.Format(lang.M_cats1, "count", 1))
+	fmt.Println(loc.Get(M_hello))
+	fmt.Println(loc.Get(M_world))
+	fmt.Println(loc.Get(M_sky, "Sky"))
+	fmt.Println(loc.Get("ying", "yang"))
+	fmt.Println(loc.Format(M_sea1, "name", "Noord"))
+	fmt.Println(loc.Format(M_cats1, "count", 3))
+	fmt.Println(loc.Format(M_cats1, "count", 1))
 }
 ```
 Outputs

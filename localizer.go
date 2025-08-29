@@ -3,20 +3,35 @@ package nls
 import (
 	"bytes"
 	"fmt"
+	"strings"
 	"text/template"
 )
 
-type Localizer struct {
+type Localizer interface {
+	// Get returns the text associated with a key for using the available languages
+	// It returns an empty string if none of the languages have a (non-empty) value for the key and no fallback is provided.
+	Get(key string, fallback ...string) string
+	// Format returns the text after applying substitutions using the key(string) and value pairs.
+	// Returns an empty string if there no such key.
+	Format(key string, kv ...any) string
+	// Replaced returns the text after applying substitutions using the replacements.
+	// Returns an empty string if there no such key.
+	Replaced(key string, replacements ...map[string]any) string
+	// ReportMissing returns a report of all missing translations.
+	ReportMissing() string
+}
+
+type localizer struct {
 	catalog   map[string]*template.Template
 	languages []string
 	missing   map[string]string
 }
 
 func NewLocalizer(catalog map[string]*template.Template, languages ...string) Localizer {
-	return Localizer{catalog: catalog, languages: languages, missing: map[string]string{}}
+	return localizer{catalog: catalog, languages: languages, missing: map[string]string{}}
 }
 
-func (l Localizer) findTemplate(key string) *template.Template {
+func (l localizer) findTemplate(key string) *template.Template {
 	for _, lang := range l.languages {
 		mapkey := fmt.Sprintf("%s.%s", lang, key)
 		if tmpl, ok := l.catalog[mapkey]; ok {
@@ -26,15 +41,17 @@ func (l Localizer) findTemplate(key string) *template.Template {
 	return nil
 }
 
-func (l Localizer) ReportMissing() {
+func (l localizer) ReportMissing() string {
+	report := new(strings.Builder)
 	for k, v := range l.missing {
-		fmt.Printf("%s:\n\tmsg: %s\n\tdesc:\n", k, v)
+		fmt.Fprintf(report, "%s:\n\tmsg: %s\n\tdesc:\n", k, v)
 	}
+	return report.String()
 }
 
 // Get returns the text associated with a key for using the available languages
 // It returns an empty string if none of the languages have a (non-empty) value for the key and no fallback is provided.
-func (l Localizer) Get(key string, fallback ...string) string {
+func (l localizer) Get(key string, fallback ...string) string {
 	tmpl := l.findTemplate(key)
 	if tmpl == nil {
 		if len(fallback) > 0 {
@@ -60,7 +77,7 @@ func (l Localizer) Get(key string, fallback ...string) string {
 
 // Format returns the text after applying substitutions using the key(string) and value pairs.
 // Returns an empty string if there no such key.
-func (l Localizer) Format(key string, kv ...any) string {
+func (l localizer) Format(key string, kv ...any) string {
 	params := map[string]any{}
 	for i := 0; i < len(kv); i += 2 {
 		k := kv[i]
@@ -75,7 +92,7 @@ func (l Localizer) Format(key string, kv ...any) string {
 
 // Replaced returns the text after applying substitutions using the replacements.
 // Returns an empty string if there no such key.
-func (l Localizer) Replaced(key string, replacements ...map[string]any) string {
+func (l localizer) Replaced(key string, replacements ...map[string]any) string {
 	tmpl := l.findTemplate(key)
 	if tmpl == nil {
 		return ""

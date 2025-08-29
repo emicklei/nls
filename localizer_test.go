@@ -104,5 +104,5 @@ func TestMissing(t *testing.T) {
 	cat := map[string]*template.Template{}
 	l := NewLocalizer(cat, "en")
 	l.Get("absent", "value")
-	l.ReportMissing()
+	t.Log(l.ReportMissing())
 }

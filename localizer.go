@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 	"text/template"
+
+	"golang.org/x/text/language"
 )
 
 type Localizer interface {
@@ -21,14 +23,24 @@ type Localizer interface {
 	ReportMissing() string
 }
 
+// for storing missing ones
+type entry struct {
+	lang string
+	key  string
+	msg  string
+}
+
 type localizer struct {
 	catalog   map[string]*template.Template
-	languages []string
-	missing   map[string]string
+	languages []string // at least one language is present
+	missing   map[string]entry
 }
 
 func NewLocalizer(catalog map[string]*template.Template, languages ...string) Localizer {
-	return localizer{catalog: catalog, languages: languages, missing: map[string]string{}}
+	if len(languages) == 0 {
+		languages = append(languages, language.English.String())
+	}
+	return localizer{catalog: catalog, languages: languages, missing: map[string]entry{}}
 }
 
 func (l localizer) findTemplate(key string) *template.Template {
@@ -43,10 +55,22 @@ func (l localizer) findTemplate(key string) *template.Template {
 
 func (l localizer) ReportMissing() string {
 	report := new(strings.Builder)
-	for k, v := range l.missing {
-		fmt.Fprintf(report, "%s:\n\tmsg: %s\n\tdesc:\n", k, v)
+	// build by lang
+	byLang := map[string][]entry{}
+	for _, e := range l.missing {
+		byLang[e.lang] = append(byLang[e.lang], e)
+	}
+	for lang, entries := range byLang {
+		fmt.Fprintf(report, "%s:\n", lang)
+		for _, entry := range entries {
+			fmt.Fprintf(report, "\t%s:\n\t\tmsg: %s\n\t\tdesc:\n", entry.key, entry.msg)
+		}
 	}
 	return report.String()
+}
+
+func (l localizer) addMissing(lang string, key string, msg string) {
+	l.missing[fmt.Sprintf("%s::%s", lang, key)] = entry{lang: lang, key: key, msg: msg}
 }
 
 // Get returns the text associated with a key for using the available languages
@@ -55,9 +79,10 @@ func (l localizer) Get(key string, fallback ...string) string {
 	tmpl := l.findTemplate(key)
 	if tmpl == nil {
 		if len(fallback) > 0 {
-			l.missing[key] = fallback[0]
+			l.addMissing(l.languages[0], key, fallback[0])
 			return fallback[0]
 		}
+		l.addMissing(l.languages[0], key, "")
 		return ""
 	}
 	buf := new(bytes.Buffer)
@@ -68,7 +93,7 @@ func (l localizer) Get(key string, fallback ...string) string {
 	msg := buf.String()
 	if msg == "" {
 		if len(fallback) > 0 {
-			l.missing[key] = fallback[0]
+			l.addMissing(l.languages[0], key, fallback[0])
 			return fallback[0]
 		}
 	}

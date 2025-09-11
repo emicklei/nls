@@ -4,6 +4,7 @@ package nls
 
 import (
 	"text/template"
+	"context"
 
 	NLS "github.com/emicklei/nls"
 )
@@ -47,4 +48,19 @@ tegen de wereld
 // New returns a Localizer with zero or more languages.
 func New(languages ...string) NLS.Localizer {
 	return NLS.NewLocalizer(messages, languages...)
+}
+
+// Get a localized string by its message ID, with an optional fallback.
+func Get(ctx context.Context, messageID string, fallback ...string) string {
+	return NLS.LocalizerFromContext(ctx).Get(messageID, fallback...)
+}
+
+// Replaced returns a localized string by its message ID, with optional replacements.
+func Replaced(ctx context.Context, messageID string, replacements ...map[string]any) string {
+	return NLS.LocalizerFromContext(ctx).Replaced(messageID, replacements...)
+}
+
+// Format returns a localized string by its message ID, with optional key-value pairs.
+func Format(ctx context.Context, messageID string, kv ...any) string {
+	return NLS.LocalizerFromContext(ctx).Format(messageID, kv...)
 }

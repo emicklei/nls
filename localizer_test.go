@@ -10,12 +10,20 @@ func mustTemplate(s string) *template.Template {
 	return template.Must(template.New("").Parse(s))
 }
 
+func TestNewLocalizer(t *testing.T) {
+	l := NewLocalizer(nil)
+	if got, want := l.(localizer).languages[0], "en"; got != want {
+		t.Errorf("got [%s] want [%s]", got, want)
+	}
+}
+
 func TestGet(t *testing.T) {
 	cat := map[string]*template.Template{
-		"en.hello": mustTemplate("world"),
-		"nl.hello": mustTemplate("wereld"),
-		"en.empty": mustTemplate(""),
-		"nl.empty": mustTemplate("no value"),
+		"en.hello":      mustTemplate("world"),
+		"nl.hello":      mustTemplate("wereld"),
+		"en.empty":      mustTemplate(""),
+		"nl.empty":      mustTemplate("no value"),
+		"en.exec_error": mustTemplate("{{.error}}"),
 	}
 	l := NewLocalizer(cat, "nl", "en")
 	if got, want := l.Get("hello"), "wereld"; got != want {
@@ -48,6 +56,17 @@ func TestGet(t *testing.T) {
 	if got, want := l.Get("empty", "fallback"), "fallback"; got != want {
 		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
 	}
+	// test missing report for empty
+	l.Get("empty")
+	if got, want := l.ReportMissing(), "en:\n\tempty:\n\t\tmsg: \n\t\tdesc:\n"; !strings.Contains(got, want) {
+		t.Errorf("got [%s] should contain [%s]", got, want)
+	}
+	l = NewLocalizer(cat, "en")
+	if got := l.Get("exec_error"); got == "" {
+		t.Error("expected an error string")
+	}
+	// test missing report for empty
+	l.Get("empty")
 }
 
 func TestFormat(t *testing.T) {
@@ -101,8 +120,17 @@ func TestReplaced(t *testing.T) {
 }
 
 func TestMissing(t *testing.T) {
-	cat := map[string]*template.Template{}
+	cat := map[string]*template.Template{
+		"en.empty": mustTemplate(""),
+	}
 	l := NewLocalizer(cat, "en")
 	l.Get("absent", "value")
-	t.Log(l.ReportMissing())
+	l.Get("empty")
+	report := l.ReportMissing()
+	if !strings.Contains(report, "absent") {
+		t.Error("missing absent entry")
+	}
+	if !strings.Contains(report, "empty") {
+		t.Error("missing empty entry")
+	}
 }

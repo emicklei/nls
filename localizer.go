@@ -96,6 +96,7 @@ func (l localizer) Get(key string, fallback ...string) string {
 			l.addMissing(l.languages[0], key, fallback[0])
 			return fallback[0]
 		}
+		l.addMissing(l.languages[0], key, "")
 	}
 	return msg
 }

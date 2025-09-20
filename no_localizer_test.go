@@ -20,3 +20,8 @@ func TestNoLocalizer(t *testing.T) {
 		t.Errorf("got [%s] want [%s]", got, want)
 	}
 }
+func TestDefaultLocalizer(t *testing.T) {
+	if _, ok := DefaultLocalizer().(Localizer); !ok {
+		t.Fatal("must be Localizer")
+	}
+}

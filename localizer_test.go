@@ -134,3 +134,27 @@ func TestMissing(t *testing.T) {
 		t.Error("missing empty entry")
 	}
 }
+
+func TestBadFormat(t *testing.T) {
+	caught := false
+	defer func() {
+		if r := recover(); r != nil {
+			caught = true
+		}
+	}()
+	cat := map[string]*template.Template{
+		"en.bad": mustTemplate("{{{.what}}}"),
+	}
+	NewLocalizer(cat, "en")
+	if !caught {
+		t.Fail()
+	}
+}
+
+func TestExecTemplateError(t *testing.T) {
+	cat := map[string]*template.Template{
+		"en.bad": mustTemplate("{{index .A 1}}"),
+	}
+	l := NewLocalizer(cat, "en")
+	l.Replaced("bad", map[string]any{"A": []string{}}) // should not panic
+}

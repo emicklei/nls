@@ -14,7 +14,7 @@ func SetDefault(localizer Localizer) {
 // DefaultLocalizer returns the default one.
 func DefaultLocalizer() Localizer { return defaultLocalizer }
 
-var localizerKey = struct{ _ string }{}
+var localizerKey = struct{ localizerKey string }{}
 
 // ContextWithLocalizer returns a new context that holds a Localizer.
 func ContextWithLocalizer(ctx context.Context, localizer Localizer) context.Context {

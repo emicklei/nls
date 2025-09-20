@@ -87,9 +87,7 @@ func (l localizer) Get(key string, fallback ...string) string {
 	}
 	buf := new(bytes.Buffer)
 	// execute with no data
-	if err := tmpl.Execute(buf, nil); err != nil {
-		return err.Error()
-	}
+	_ = tmpl.Execute(buf, nil)
 	msg := buf.String()
 	if msg == "" {
 		if len(fallback) > 0 {

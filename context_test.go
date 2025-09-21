@@ -34,7 +34,7 @@ func TestContext(t *testing.T) {
 
 func TestTranslations(t *testing.T) {
 	ctx := ContextWithLocalizer(context.Background(), NewLocalizer(nil, "fr"))
-	if got, want := Get(ctx, "hello"), ""; got != want {
+	if got, want := Get(ctx, "hello"), "hello"; got != want {
 		t.Errorf("got [%s] want [%s]", got, want)
 	}
 	if got, want := Replaced(ctx, "hello %s", map[string]any{"arg": "world"}), ""; got != want {

@@ -38,7 +38,7 @@ func TestGet(t *testing.T) {
 		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
 	}
 	l = NewLocalizer(cat, "fr")
-	if got, want := l.Get("hello"), ""; got != want {
+	if got, want := l.Get("hello"), "hello"; got != want {
 		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
 	}
 	l = NewLocalizer(cat, "fr")
@@ -46,7 +46,7 @@ func TestGet(t *testing.T) {
 		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
 	}
 	l = NewLocalizer(cat, "en")
-	if got, want := l.Get("unknown"), ""; got != want {
+	if got, want := l.Get("unknown"), "unknown"; got != want {
 		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
 	}
 	l = NewLocalizer(cat, "en", "nl")
@@ -56,9 +56,10 @@ func TestGet(t *testing.T) {
 	if got, want := l.Get("empty", "fallback"), "fallback"; got != want {
 		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
 	}
+	Missing = map[string]Fallback{} // reset
 	// test missing report for empty
 	l.Get("empty")
-	if got, want := l.ReportMissing(), "en:\n\tempty:\n\t\tmsg: \n\t\tdesc:\n"; !strings.Contains(got, want) {
+	if got, want := ReportMissing(), "en:\n\tempty:\n\t\tmsg: \n\t\tdesc:\n"; !strings.Contains(got, want) {
 		t.Errorf("got [%s] should contain [%s]", got, want)
 	}
 	l = NewLocalizer(cat, "en")
@@ -126,7 +127,7 @@ func TestMissing(t *testing.T) {
 	l := NewLocalizer(cat, "en")
 	l.Get("absent", "value")
 	l.Get("empty")
-	report := l.ReportMissing()
+	report := ReportMissing()
 	if !strings.Contains(report, "absent") {
 		t.Error("missing absent entry")
 	}

@@ -21,7 +21,9 @@ func TestNoLocalizer(t *testing.T) {
 	}
 }
 func TestDefaultLocalizer(t *testing.T) {
-	if _, ok := DefaultLocalizer().(Localizer); !ok {
-		t.Fatal("must be Localizer")
+	//defaultLocalizer = NoLocalizer{}
+	if got := DefaultLocalizer().Get("today"); got != "today" {
+		t.Logf("%#v", DefaultLocalizer())
+		t.Errorf("got [%s] want [%s]", got, "today")
 	}
 }

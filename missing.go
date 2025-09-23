@@ -3,6 +3,7 @@ package nls
 import (
 	"fmt"
 	"strings"
+	"text/template"
 )
 
 var Missing map[string]Fallback = map[string]Fallback{}
@@ -32,4 +33,9 @@ func ReportMissing() string {
 		}
 	}
 	return report.String()
+}
+
+// Register is called from generated code.
+func Register(catalog map[string]*template.Template, key string, templateSource string) {
+	catalog[key] = template.Must(template.New(key).Parse(templateSource))
 }

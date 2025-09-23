@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 	"text/template"
 	"unicode"
 
@@ -100,8 +101,13 @@ func writeGoFile(entries []Entry) error {
 		return err
 	}
 	uniqueEntries := map[string]Entry{}
+	languages := []string{}
 	// collect unique entries
 	for _, each := range entries {
+		// TODO use map?
+		if !slices.Contains(languages, each.Language) {
+			languages = append(languages, each.Language)
+		}
 		existing, ok := uniqueEntries[each.Key]
 		if !ok {
 			uniqueEntries[each.Key] = each
@@ -116,10 +122,12 @@ func writeGoFile(entries []Entry) error {
 		Package       string
 		UniqueEntries map[string]Entry
 		Entries       []Entry
+		LanguageTags  []string
 	}{
 		Package:       filepath.Base(*oPkg),
 		UniqueEntries: uniqueEntries,
 		Entries:       entries,
+		LanguageTags:  languages,
 	}
 	return tmpl.Execute(out, data)
 }

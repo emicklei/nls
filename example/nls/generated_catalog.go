@@ -5,6 +5,7 @@ package nls
 import (
 	"text/template"
 	"context"
+	"golang.org/x/text/language"
 
 	NLS "github.com/emicklei/nls"
 )
@@ -22,27 +23,37 @@ const (
 	M_world = "world"
 )
 
-// messages is a map of language-key to message template.
-var messages = make(map[string]*template.Template,16)
+
+var (
+	// messages is a map of language-key to message template.
+	messages = make(map[string]*template.Template,16)
+
+	// https://pkg.go.dev/golang.org/x/text/language
+	Languages = []language.Tag{
+	 	language.MustParse("en"),
+	 	language.MustParse("nl"),
+	}
+	LanguageMatcher = language.NewMatcher(Languages)
+)
 
 func init() {
-	messages["en."+M_cats1] = template.Must(template.New("en.cats").Parse(`{{.count}} {{- if gt .count 1}} cats{{- else}} cat{{- end}}`))
-	messages["en."+M_multi1] = template.Must(template.New("en.multi").Parse(`{{.name}} says hello
+	NLS.Register(messages,"en.cats",`{{.count}} {{- if gt .count 1}} cats{{- else}} cat{{- end}}`)
+	NLS.Register(messages,"en.multi",`{{.name}} says hello
 to the world
-`))
-	messages["en."+M_sea1] = template.Must(template.New("en.sea").Parse(`{{.color }} sea`))
-	messages["en."+M_sky] = template.Must(template.New("en.sky").Parse(`Sky`))
-	messages["en."+M_trends2_1] = template.Must(template.New("en.trends2").Parse(`{{.value}} trends`))
-	messages["en."+M_world] = template.Must(template.New("en.world").Parse(`world`))
-	messages["nl."+M_bestaat] = template.Must(template.New("nl.bestaat").Parse(`wel`))
-	messages["nl."+M_cats1] = template.Must(template.New("nl.cats").Parse(`{{.count}} {{- if gt .count 1}} katten{{- else}} kat{{- end}}`))
-	messages["nl."+M_hello] = template.Must(template.New("nl.hello").Parse(`hallo`))
-	messages["nl."+M_multi1] = template.Must(template.New("nl.multi").Parse(`{{.name}} zegt hallo
+`)
+	NLS.Register(messages,"en.sea",`{{.color }} sea`)
+	NLS.Register(messages,"en.sky",`Sky`)
+	NLS.Register(messages,"en.trends2",`{{.value}} trends`)
+	NLS.Register(messages,"en.world",`world`)
+	NLS.Register(messages,"nl.bestaat",`wel`)
+	NLS.Register(messages,"nl.cats",`{{.count}} {{- if gt .count 1}} katten{{- else}} kat{{- end}}`)
+	NLS.Register(messages,"nl.hello",`hallo`)
+	NLS.Register(messages,"nl.multi",`{{.name}} zegt hallo
 tegen de wereld
-`))
-	messages["nl."+M_sea1] = template.Must(template.New("nl.sea").Parse(`{{.name }} zee`))
-	messages["nl."+M_trends2_1] = template.Must(template.New("nl.trends2").Parse(`{{.value}} trends`))
-	messages["nl."+M_world] = template.Must(template.New("nl.world").Parse(`wereld`))
+`)
+	NLS.Register(messages,"nl.sea",`{{.name }} zee`)
+	NLS.Register(messages,"nl.trends2",`{{.value}} trends`)
+	NLS.Register(messages,"nl.world",`wereld`)
 }
 
 // New returns a Localizer with zero or more languages.

@@ -5,6 +5,7 @@ package {{.Package}}
 import (
 	"text/template"
 	"context"
+	"golang.org/x/text/language"
 
 	NLS "github.com/emicklei/nls"
 )
@@ -18,13 +19,24 @@ const (
     {{- end}}
 )
 
-// messages is a map of language-key to message template.
-var messages = make(map[string]*template.Template,{{len .Entries}})
+
+var (
+	// messages is a map of language-key to message template.
+	messages = make(map[string]*template.Template,{{len .Entries}})
+
+	// https://pkg.go.dev/golang.org/x/text/language
+	Languages = []language.Tag{
+		{{- range .LanguageTags}}
+	 	language.MustParse("{{.}}"),
+	 	{{- end }}
+	}
+	LanguageMatcher = language.NewMatcher(Languages)
+)
 
 func init() {	
 	{{- range .Entries }}
 	{{- if .Text}}
-	messages["{{.Language}}."+{{constantName .}}] = template.Must(template.New("{{.Language}}.{{.Key}}").Parse(`{{.Text}}`))
+	NLS.Register(messages,"{{.Language}}.{{.Key}}",`{{.Text}}`)
 	{{- end}}
 	{{- end}}
 }

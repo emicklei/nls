@@ -29,7 +29,7 @@ func ReportMissing() string {
 	for lang, entries := range byLang {
 		fmt.Fprintf(report, "%s:\n", lang)
 		for _, entry := range entries {
-			fmt.Fprintf(report, "\t%s:\n\t\tmsg: %s\n\t\tdesc:\n", entry.Key, entry.Msg)
+			fmt.Fprintf(report, "\t%s: %s\n", entry.Key, entry.Msg)
 		}
 	}
 	return report.String()

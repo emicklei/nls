@@ -90,6 +90,26 @@ Noord zee
 1 kat
 ```
 
+### use localizer in a context
+
+Here `generated` is the package created by the `nls` tool.
+
+```go
+// NewLocalizerHandler sets up the localizer in the context.
+func NewLocalizerHandler(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		ctx := req.Context()
+		cookieLang, _ := req.Cookie("lang")
+		accept := req.Header.Get("Accept-Language")
+		// https://pkg.go.dev/golang.org/x/text/language
+		_, index := language.MatchStrings(generated.LanguageMatcher, cookieLang.String(), accept)
+		tag := generated.Languages[index].String()
+		ctx = nls.ContextWithLocalizer(ctx, lang.New(tag))
+		next(w, req.WithContext(ctx))
+	}
+}
+```
+
 ## acknowledgements
 
 Making of this package is inspired by the (inactive) [go-localize](https://github.com/m1/go-localize) package.

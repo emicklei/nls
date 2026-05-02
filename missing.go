@@ -7,6 +7,7 @@ import (
 )
 
 var Missing map[string]Fallback = map[string]Fallback{}
+var trackMissing = true
 
 // for storing missing ones
 type Fallback struct {
@@ -16,7 +17,15 @@ type Fallback struct {
 }
 
 func addMissing(lang, key, msg string) {
-	Missing[fmt.Sprintf("%s::%s", lang, key)] = Fallback{Lang: lang, Key: key, Msg: msg}
+	if !trackMissing {
+		return
+	}
+	Missing[lang+"::"+key] = Fallback{Lang: lang, Key: key, Msg: msg}
+}
+
+// EnableMissingTracking controls whether missing keys are recorded.
+func EnableMissingTracking(enabled bool) {
+	trackMissing = enabled
 }
 
 func ReportMissing() string {
@@ -29,7 +38,9 @@ func ReportMissing() string {
 	for lang, entries := range byLang {
 		fmt.Fprintf(report, "%s:\n", lang)
 		for _, entry := range entries {
-			fmt.Fprintf(report, "\t%s: %s\n", entry.Key, entry.Msg)
+			fmt.Fprintf(report, "\t%s:\n", entry.Key)
+			fmt.Fprintf(report, "\t\tmsg: %s\n", entry.Msg)
+			fmt.Fprintf(report, "\t\tdesc:\n")
 		}
 	}
 	return report.String()

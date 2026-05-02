@@ -22,6 +22,7 @@ func ContextWithLocalizer(ctx context.Context, localizer Localizer) context.Cont
 }
 
 // LocalizerFromContext returns the localizer from the context or the default is absent.
+// For hot paths, resolve once and reuse instead of repeatedly calling Get/Replaced/Format wrappers.
 func LocalizerFromContext(ctx context.Context) Localizer {
 	l, ok := ctx.Value(localizerKey).(Localizer)
 	if ok {
